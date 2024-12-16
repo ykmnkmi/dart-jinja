@@ -707,15 +707,14 @@ base class StringSinkRenderer
 
   @override
   void visitWith(With node, StringSinkRenderContext context) {
-    var targets = <Object?>[
-      for (var target in node.targets) target.accept(this, context)
-    ];
+    var data = <String, Object?>{};
 
-    var values = <Object?>[
-      for (var value in node.values) value.accept(this, context)
-    ];
+    for (var i = 0; i < node.targets.length; i += 1) {
+      var target = node.targets[i].accept(this, context) as String;
+      var value = node.values[i].accept(this, context);
+      data[target] = value;
+    }
 
-    var data = getDataForTargets(targets, values);
     var newContext = context.derived(data: data);
     node.body.accept(this, newContext);
   }

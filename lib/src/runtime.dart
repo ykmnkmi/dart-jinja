@@ -183,41 +183,24 @@ final class LoopContext extends Iterable<Object?> {
   }
 
   Object? operator [](String key) {
-    switch (key) {
-      case 'length':
-        return length;
-      case 'index0':
-        return index0;
-      case 'depth0':
-        return depth0;
-      case 'index':
-        return index;
-      case 'depth':
-        return depth;
-      case 'revindex0':
-        return revindex0;
-      case 'revindex':
-        return revindex;
-      case 'first':
-        return first;
-      case 'last':
-        return last;
-      case 'prev':
-      case 'previtem':
-        return prev;
-      case 'next':
-      case 'nextitem':
-        return next;
-      case 'call':
-        return call;
-      case 'cycle':
-        return cycle;
-      case 'changed':
-        return changed;
-      default:
-        var invocation = Invocation.getter(Symbol(key));
-        throw NoSuchMethodError.withInvocation(this, invocation);
-    }
+    return switch (key) {
+      'length' => length,
+      'index0' => index0,
+      'depth0' => depth0,
+      'index' => index,
+      'depth' => depth,
+      'revindex0' => revindex0,
+      'revindex' => revindex,
+      'first' => first,
+      'last' => last,
+      'prev' || 'previtem' => prev,
+      'next' || 'nextitem' => next,
+      'call' => call,
+      'cycle' => cycle,
+      'changed' => changed,
+      _ => throw NoSuchMethodError.withInvocation(
+          this, Invocation.getter(Symbol(key))),
+    };
   }
 
   String call(Object? data) {
@@ -225,7 +208,7 @@ final class LoopContext extends Iterable<Object?> {
   }
 
   Object? cycle(Iterable<Object?> values) {
-    var list = values.toList();
+    var list = values is List ? values : values.toList();
 
     if (list.isEmpty) {
       // TODO(loop): update error
@@ -236,15 +219,7 @@ final class LoopContext extends Iterable<Object?> {
   }
 
   bool changed(Object? item) {
-    if (index0 == 0) {
-      return true;
-    }
-
-    if (item == prev) {
-      return false;
-    }
-
-    return true;
+    return index0 == 0 || item != prev;
   }
 }
 

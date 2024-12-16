@@ -105,4 +105,46 @@ void main() {
       expect(tmpl.render(), equals('1||23,1|2|23,1|2|3,1|7|7'));
     });
   });
+
+  group('Macro and Extends', () {
+    var sources = <String, String>{
+      'macro': '''
+{% macro hey(name) %}hello {{ name }}!{% endmacro %}
+''',
+      'base': '''
+{% block content %}{% endblock %}
+''',
+      'global': '''
+{% extends 'base' %}
+
+{% import 'macro' as macro %}
+
+{% block content -%}
+  {{ macro.hey('world') }}
+{%- endblock %}
+''',
+      'inblock': '''
+{% extends 'base' %}
+
+
+{% block content -%}
+  {%- import 'macro' as macro -%}
+  {{ macro.hey('world') }}
+{%- endblock %}
+''',
+    };
+
+    var loaded = MapLoader(sources);
+    var environment = Environment(loader: loaded, leftStripBlocks: true);
+
+    test('global import', () {
+      var template = environment.getTemplate('global');
+      expect(template.render(), equals('hello world!'));
+    });
+
+    test('import in block', () {
+      var template = environment.getTemplate('inblock');
+      expect(template.render(), equals('hello world!'));
+    });
+  });
 }
